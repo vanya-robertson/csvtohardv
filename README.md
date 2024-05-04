@@ -2,6 +2,7 @@
 
 A program for high-throughput flashcard generation from csv files
 Written in Python  
+Work in progress
 
 # Specifications
 
@@ -15,7 +16,7 @@ In chronological order:
     + Array in format "["title1", "title2", "title3"]" or "[["title1", "title2"], ["title3", "title4"]]", which will permute the outer list, and the first sublist, if present, combining array\[0]\[0] and array\[1]
 - Former case:
     + Generates every possible pairiwise permutation of strings
-    + so ["structure", "code", "description"] generates ${}_3 P_2 = 6$ permutations
+    + so ["structure", "code", "description"] generates ${}_3 P_2 = 6$ permutations:
     + ["structure", "code"]
     + ["code", "structure"]
     + ["structure", "description"]
@@ -24,12 +25,12 @@ In chronological order:
     + ["description", "code"]
 - Former case with external argument:
     + Generates every possible pairiwise permutation of strings
-    + so '["location", "PAO"], "explanation"' generates ${}_2 P_{2} = 2$ permutations
+    + so '["location", "PAO"], "explanation"' generates ${}_2 P_{2} = 2$ lists:
     + ["location", "PAO", "explanation"]
     + ["PAO", "location", "explanation"]
 - Latter case:
     + Generates every permutation of the lists and combines the lists, but individually including elements from the first list. 
-    + so [["eng.text", "eng.audio"], ["fra.text", "fra.audio"]] generates $2 \text{(items in sublist)} * {}_2 P_{2} \text{(items in list)} = 4$ lists
+    + so [["eng.text", "eng.audio"], ["fra.text", "fra.audio"]] generates $2 \text{(items in sublist)} * {}_2 P_{2} \text{(items in list)} = 4$ lists:
     + ["eng.text", "fra.text", "fra.audio"]
     + ["eng.audio", "fra.text", "fra.audio"]
     + ["fra.text", "eng.text", "eng.audio"]
