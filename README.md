@@ -25,12 +25,12 @@ In chronological order:
     + ["description", "code"]
 - Former case with external argument:
     + Generates every possible pairiwise permutation of strings
-    + so '["location", "PAO"], "explanation"' generates ${}_2 P_{2} = 2$ lists:
+    + so '["location", "PAO"], "explanation"' generates ${}_{2} P_{2} = 2$ lists:
     + ["location", "PAO", "explanation"]
     + ["PAO", "location", "explanation"]
 - Latter case:
     + Generates every permutation of the lists and combines the lists, but individually including elements from the first list. 
-    + so [["eng.text", "eng.audio"], ["fra.text", "fra.audio"]] generates $2 \text{(items in sublist)} * {}_2 P_{2} \text{(items in list)} = 4$ lists:
+    + so [["eng.text", "eng.audio"], ["fra.text", "fra.audio"]] generates $2 \text{(items in sublist)} * {}_{2} P_{2} \text{(items in list)} = 4$ lists:
     + ["eng.text", "fra.text", "fra.audio"]
     + ["eng.audio", "fra.text", "fra.audio"]
     + ["fra.text", "eng.text", "eng.audio"]
