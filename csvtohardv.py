@@ -42,7 +42,7 @@ def column_combinatorics(array, explanation=None):
 #                            final_perm_list.append([explanation])
 #                            print(explanation)
 #                print(final_perm_list)
-                final_perm_string += str(final_perm_list) + ", formatstring='\"%s\"'" + "\n"
+                final_perm_string += str(" ".join(final_perm_list)) + " formatstring='\"%s\"' outfile=\"\"" + "\n"
     else:
         #use case only for arrays with no subarrays
         #returns list
@@ -57,7 +57,7 @@ def column_combinatorics(array, explanation=None):
                 final_perm_list.append(explanation)
 #                        print(explanation)
 #            print(final_perm_list)
-            final_perm_string += str(final_perm_list) + ", formatstring='\"%s\"'" + "\n"
+            final_perm_string += str(" ".join(final_perm_list)) + " formatstring='\"%s\"' outfile=\"\"" + "\n"
 
 #   output to nvim buffer
 #    print(final_perm_string)
@@ -75,29 +75,31 @@ def column_combinatorics(array, explanation=None):
 def check_whether_in_file():
     pass
 
-def output_to_hardv(infile, outfile, formatstring, *args, mod=None):
+proto_mod=None
+def output_to_hardv(infile, *args, formatstring='"%s"', mod=proto_mod, outfile="/dev/stdout"):
     with open(infile, newline='') as csvfile:
-        with open(outfile, "w"):
-            csvreader = csv.reader(csvfile, delimiter=',', quotechar='"')
-            column_names = []
-            for row in csvreader:
-                column_names.append(row)
-                break
-            if "next" in args:
-                raise ValueError("The column name may not be \"next\"")
-            if "prev" in args:
-                raise ValueError("The column name may not be \"prev\"")
-            for row in csvreader:
-                if mod is not None:
-                    print("MOD\t%s" % mod)
-                if formatstring != "":
-                    print("Q\t" + formatstring % row[0])
-                else:
-                    print("Q\t%s" % row[0])
-                print("A\t%s" % row[1])
-                for filtered_column_name in args[2:]:
-                    print(filtered_column_name.upper() + "\t" + row[column_names[0].index(filtered_column_name)])
-                print("%%\n")
+        text = open(outfile, "a")
+        csvreader = csv.reader(csvfile, delimiter=',', quotechar='"')
+        column_names = []
+        for row in csvreader:
+            column_names.append(row)
+            break
+        if "next" in args:
+            raise ValueError("The column name may not be \"next\"")
+        if "prev" in args:
+            raise ValueError("The column name may not be \"prev\"")
+        for row in csvreader:
+            if mod is not None:
+                text.write("MOD\t%s\n" % mod)
+            if formatstring != "":
+                text.write("Q\t" + formatstring % row[0] + "\n")
+            else:
+                text.write("Q\t%s\n" % row[0])
+            text.write("A\t%s\n" % row[1])
+            for filtered_column_name in args[2:]:
+                text.write(filtered_column_name.upper() + "\t" + row[column_names[0].index(filtered_column_name) + "\n"])
+            text.write("%%\n\n")
+        text.close()
     csvfile.close()
 
 def main():
@@ -105,10 +107,11 @@ def main():
 #    args=[arg for arg in argv if arg.find('=')<0]
 #    print(args)
 #    print(kwargs)
-#    output_to_hardv("/home/jcrtf/c-syntax-structures.csv", "Write the code for the C syntax structure \"%s\"", "structure", "code", "desc", mod="hello.sh")
+#    output_to_hardv("/home/jcrtf/archives/flashcards/c-syntax-structures.csv", "structure", "code", formatstring="Write the code for the C syntax structure \"%s\"", mod="modscript.sh")
 #    column_combinatorics([["eng.txt", "eng.aud", "eng.vid"], ["rus.txt", "rus.aud", "rus.vid"], ["ara.txt", "ara.aud", "rus.vid"]]) # inhibit use case # done
 #    column_combinatorics([["eng.txt", "eng.aud", "eng.vid"], ["rus.txt", "rus.aud", "rus.vid"]]) # desired behaviour
-    column_combinatorics([["eng.txt", "eng.aud"], ["rus.txt", "rus.aud"]]) # desired behaviour
+#    eng.txt rus.txt rus.aud rus.vid formatstring='"%s"' outfile=""
+#    column_combinatorics([["eng.txt", "eng.aud"], ["rus.txt", "rus.aud"]]) # desired behaviour
 #    column_combinatorics(["structure", "code", "desc"]) # desired behaviour
 #    column_combinatorics(["structure", "code"]) # desired behaviour
 #    column_combinatorics(["location", "pao"], explanation="explanation") # desired behaviour
