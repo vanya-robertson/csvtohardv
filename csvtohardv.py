@@ -17,6 +17,7 @@ from sys import argv
 from itertools import permutations
 import csv
 import tempfile, subprocess
+from re import findall, sub, split
 
 def column_combinatorics(array, explanation=None):
     array_only_lists = False
@@ -75,8 +76,7 @@ def column_combinatorics(array, explanation=None):
 def check_whether_in_file():
     pass
 
-proto_mod=None
-def output_to_hardv(infile, *args, formatstring='"%s"', mod=proto_mod, outfile="/dev/stdout"):
+def output_to_hardv(infile, args, formatstring='"%s"', mod=None, outfile="/dev/stdout"):
     with open(infile, newline='') as csvfile:
         text = open(outfile, "a")
         csvreader = csv.reader(csvfile, delimiter=',', quotechar='"')
@@ -89,7 +89,7 @@ def output_to_hardv(infile, *args, formatstring='"%s"', mod=proto_mod, outfile="
         if "prev" in args:
             raise ValueError("The column name may not be \"prev\"")
         for row in csvreader:
-            if mod is not None:
+            if mod is not '':
                 text.write("MOD\t%s\n" % mod)
             if formatstring != "":
                 text.write("Q\t" + formatstring % row[0] + "\n")
@@ -97,22 +97,42 @@ def output_to_hardv(infile, *args, formatstring='"%s"', mod=proto_mod, outfile="
                 text.write("Q\t%s\n" % row[0])
             text.write("A\t%s\n" % row[1])
             for filtered_column_name in args[2:]:
-                text.write(filtered_column_name.upper() + "\t" + row[column_names[0].index(filtered_column_name) + "\n"])
+                text.write(filtered_column_name.upper() + "\t" + row[column_names[0].index(filtered_column_name)] + "\n")
             text.write("%%\n\n")
         text.close()
     csvfile.close()
 
+buffer_output='structure code formatstring=\'What is the code for "%s"?\' outfile="/dev/stdout"'
+
 def main():
-#    kwargs={kw[0]:kw[1] for kw in [ar.split('=') for ar in argv if ar.find('=')>0]}
-#    args=[arg for arg in argv if arg.find('=')<0]
-#    print(args)
-#    print(kwargs)
-#    output_to_hardv("/home/jcrtf/archives/flashcards/c-syntax-structures.csv", "structure", "code", formatstring="Write the code for the C syntax structure \"%s\"", mod="modscript.sh")
+    keywords = findall("\\w+=\".+?\"|\\w+=\'.+?\'|\\w+=[\\S^\'\"]+", buffer_output)
+    non_keywords = sub("\\w+=\".+?\"|\\w+=\'.+?\'|\\w+=[\\S^\'\"]+", '', buffer_output).split()
+
+    try:
+        outfile_full_arg = [ match for match in keywords if "outfile=" in match ][0]
+        outfile_quoted_arg = split("=", outfile_full_arg, 1)[1]
+        outfile_arg = str(outfile_quoted_arg.replace("\"", "", 1).replace("\"", "", len(outfile_quoted_arg)))
+    except IndexError:
+        outfile_arg='/dev/stdout'
+
+    try:
+        mod_full_arg = [ match for match in keywords if "mod=" in match ][0]
+        mod_quoted_arg = split("=", mod_full_arg, 1)[1]
+        mod_arg = str(mod_quoted_arg.replace("\"", "", 1).replace("\"", "", len(mod_quoted_arg)))
+    except IndexError:
+        mod_arg=''
+
+    try:
+        formatstring_full_arg = [ match for match in keywords if "formatstring=" in match ][0]
+        formatstring_quoted_arg = split("=", formatstring_full_arg, 1)[1]
+        formatstring_arg = str(formatstring_quoted_arg.replace("\'", "", 1).replace("\'", "", len(formatstring_quoted_arg)))
+    except IndexError:
+        formatstring_arg='%s'
+#    output_to_hardv("/home/jcrtf/archives/flashcards/c-syntax-structures.csv", non_keywords, formatstring=formatstring_arg, mod=mod_arg, outfile=outfile_arg)
 #    column_combinatorics([["eng.txt", "eng.aud", "eng.vid"], ["rus.txt", "rus.aud", "rus.vid"], ["ara.txt", "ara.aud", "rus.vid"]]) # inhibit use case # done
 #    column_combinatorics([["eng.txt", "eng.aud", "eng.vid"], ["rus.txt", "rus.aud", "rus.vid"]]) # desired behaviour
-#    eng.txt rus.txt rus.aud rus.vid formatstring='"%s"' outfile=""
 #    column_combinatorics([["eng.txt", "eng.aud"], ["rus.txt", "rus.aud"]]) # desired behaviour
-#    column_combinatorics(["structure", "code", "desc"]) # desired behaviour
+    column_combinatorics(["structure", "code", "desc"]) # desired behaviour
 #    column_combinatorics(["structure", "code"]) # desired behaviour
 #    column_combinatorics(["location", "pao"], explanation="explanation") # desired behaviour
 #    column_combinatorics(["location", "pao"], "explanation") # desired behaviour
