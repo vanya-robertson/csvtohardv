@@ -71,71 +71,89 @@ def column_combinatorics(array, explanation=None):
         text = open(temp.name, 'r')
         buffer_output = text.read()
         temp.close()
-    print(buffer_output)
+    return(buffer_output)
 
 def check_whether_in_file():
     pass
 
-def output_to_hardv(infile, args, formatstring='"%s"', mod=None, outfile="/dev/stdout"):
+def output_to_hardv(infile, selected_column_names, formatstring='"%s"', mod=None, outfile="/dev/stdout"):
     with open(infile, newline='') as csvfile:
+        # Wipe output file
+        open(outfile, 'w').close()
         text = open(outfile, "a")
         csvreader = csv.reader(csvfile, delimiter=',', quotechar='"')
-        column_names = []
+        all_column_names = []
         for row in csvreader:
-            column_names.append(row)
+            for column_name in row:
+                all_column_names.append(column_name)
             break
-        if "next" in args:
-            raise ValueError("The column name may not be \"next\"")
-        if "prev" in args:
-            raise ValueError("The column name may not be \"prev\"")
+        if "next" in all_column_names:
+            raise ValueError("A column name may not be \"next\"")
+        if "prev" in all_column_names:
+            raise ValueError("A column name may not be \"prev\"")
         for row in csvreader:
-            if mod is not '':
+            if mod != '':
                 text.write("MOD\t%s\n" % mod)
-            if formatstring != "":
-                text.write("Q\t" + formatstring % row[0] + "\n")
-            else:
-                text.write("Q\t%s\n" % row[0])
-            text.write("A\t%s\n" % row[1])
-            for filtered_column_name in args[2:]:
-                text.write(filtered_column_name.upper() + "\t" + row[column_names[0].index(filtered_column_name)] + "\n")
+            text.write("Q\t" + formatstring % row[all_column_names.index(selected_column_names[0])] + "\n")
+            text.write("A\t" + row[all_column_names.index(selected_column_names[1])] + "\n")
+            for column_name in selected_column_names[2:]:
+                text.write(column_name.upper() + "\t" + row[all_column_names.index(column_name)] + "\n")
             text.write("%%\n\n")
         text.close()
     csvfile.close()
 
-buffer_output='structure code formatstring=\'What is the code for "%s"?\' outfile="/dev/stdout"'
 
 def main():
-    keywords = findall("\\w+=\".+?\"|\\w+=\'.+?\'|\\w+=[\\S^\'\"]+", buffer_output)
-    non_keywords = sub("\\w+=\".+?\"|\\w+=\'.+?\'|\\w+=[\\S^\'\"]+", '', buffer_output).split()
-
-    try:
-        outfile_full_arg = [ match for match in keywords if "outfile=" in match ][0]
-        outfile_quoted_arg = split("=", outfile_full_arg, 1)[1]
-        outfile_arg = str(outfile_quoted_arg.replace("\"", "", 1).replace("\"", "", len(outfile_quoted_arg)))
-    except IndexError:
-        outfile_arg='/dev/stdout'
-
-    try:
-        mod_full_arg = [ match for match in keywords if "mod=" in match ][0]
-        mod_quoted_arg = split("=", mod_full_arg, 1)[1]
-        mod_arg = str(mod_quoted_arg.replace("\"", "", 1).replace("\"", "", len(mod_quoted_arg)))
-    except IndexError:
-        mod_arg=''
-
-    try:
-        formatstring_full_arg = [ match for match in keywords if "formatstring=" in match ][0]
-        formatstring_quoted_arg = split("=", formatstring_full_arg, 1)[1]
-        formatstring_arg = str(formatstring_quoted_arg.replace("\'", "", 1).replace("\'", "", len(formatstring_quoted_arg)))
-    except IndexError:
-        formatstring_arg='%s'
 #    output_to_hardv("/home/jcrtf/archives/flashcards/c-syntax-structures.csv", non_keywords, formatstring=formatstring_arg, mod=mod_arg, outfile=outfile_arg)
 #    column_combinatorics([["eng.txt", "eng.aud", "eng.vid"], ["rus.txt", "rus.aud", "rus.vid"], ["ara.txt", "ara.aud", "rus.vid"]]) # inhibit use case # done
 #    column_combinatorics([["eng.txt", "eng.aud", "eng.vid"], ["rus.txt", "rus.aud", "rus.vid"]]) # desired behaviour
 #    column_combinatorics([["eng.txt", "eng.aud"], ["rus.txt", "rus.aud"]]) # desired behaviour
-    column_combinatorics(["structure", "code", "desc"]) # desired behaviour
 #    column_combinatorics(["structure", "code"]) # desired behaviour
 #    column_combinatorics(["location", "pao"], explanation="explanation") # desired behaviour
 #    column_combinatorics(["location", "pao"], "explanation") # desired behaviour
 #    check_whether_in_file()
+#    print(buffer_output)
+
+#    buffer_output = column_combinatorics(["structure", "code", "desc"]) # desired behaviour
+    buffer_output='code structure formatstring=\'Name the C syntax structure coded "%s"\' outfile="/dev/stdout"'
+
+    lineiterator = buffer_output.splitlines()
+    for line in lineiterator:
+        keywords = findall("\\w+=\".+?\"|\\w+=\'.+?\'|\\w+=[\\S^\'\"]+", line)
+        non_keywords = sub("\\w+=\".+?\"|\\w+=\'.+?\'|\\w+=[\\S^\'\"]+", '', line).split()
+
+        try:
+            outfile_full_arg = [ match for match in keywords if "outfile=" in match ][0]
+            outfile_quoted_arg = split("=", outfile_full_arg, 1)[1]
+            outfile_arg = str(outfile_quoted_arg.replace("\"", "", 1).replace("\"", "", len(outfile_quoted_arg)))
+        except IndexError:
+            outfile_arg='/dev/stdout'
+    
+        try:
+            mod_full_arg = [ match for match in keywords if "mod=" in match ][0]
+            mod_quoted_arg = split("=", mod_full_arg, 1)[1]
+            mod_arg = str(mod_quoted_arg.replace("\"", "", 1).replace("\"", "", len(mod_quoted_arg)))
+        except IndexError:
+            mod_arg=''
+    
+        try:
+            formatstring_full_arg = [ match for match in keywords if "formatstring=" in match ][0]
+            formatstring_quoted_arg = split("=", formatstring_full_arg, 1)[1]
+            formatstring_arg = str(formatstring_quoted_arg.replace("\'", "", 1).replace("\'", "", len(formatstring_quoted_arg)))
+        except IndexError:
+            formatstring_arg='%s'
+
+#        print(non_keywords)
+#        print(outfile_arg)
+        output_to_hardv("/home/jcrtf/archives/flashcards/c-syntax-structures.csv", non_keywords, formatstring=formatstring_arg, mod=mod_arg, outfile=outfile_arg)
+#        print(non_keywords)
+
+#        print(keywords)
+#        print(non_keywords)
+
+#    print(non_keywords)
+
+#
+##    print(buffer_output)
 
 main()
