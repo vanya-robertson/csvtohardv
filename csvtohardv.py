@@ -13,11 +13,52 @@
 # if card in output, output to temp file with timestamps if present
 # if card in input but not in output, output to temp file
 
-from sys import argv
+#from sys import argv
 from itertools import permutations
 import csv
 import tempfile, subprocess
 from re import findall, sub, split
+
+class Card:
+    def __init__(self, mod=None, nexttime=None, prevtime=None, questionfield=None, answerfield=None, additionalfields=None):
+        self.mod = mod
+        self.nexttime = nexttime
+        self.prevtime = prevtime
+        self.questionfield = questionfield
+        self.answerfield = answerfield
+        # Dictionary of additional fields
+        self.additionalfields = additionalfields
+
+    def __str__(self):
+        returnlist = []
+        if self.mod is not None:
+            returnlist.append("MOD\t" + self.mod)
+        if self.nexttime is not None:
+            returnlist.append("NEXT\t" + self.nexttime)
+        if self.prevtime is not None:
+            returnlist.append("PREV\t" + self.prevtime)
+        if self.questionfield is not None:
+            returnlist.append("Q\t" + self.questionfield)
+        if self.answerfield is not None:
+            returnlist.append("A\t" + self.answerfield)
+        if self.additionalfields is not None:
+            for key, value in self.additionalfields.items():
+                returnlist.append(key.upper() + "\t" + value)
+        returnlist.append("%%\n")
+        return "\n".join(returnlist)
+
+card1 = Card(questionfield="When was the Norman invasion of England?", answerfield="1066", additionalfields={"winningside": "Normans"})
+
+def add_tabs(instring):
+    returnlist = []
+    count = 0
+    for line in instring.split("\n"):
+        if count == 0:
+            returnlist.append(line)
+        else:
+            returnlist.append("\t" + line)
+        count+=1
+    return "\n".join(returnlist)
 
 def column_combinatorics(array, explanation=None):
     array_only_lists = False
@@ -29,8 +70,7 @@ def column_combinatorics(array, explanation=None):
             raise ValueError("The array should contain exactly two sub_perm_lists")
         primary_perms = permutations(array, len(array))
 
-        #use case only for arrays with only subarrays
-        #returns list
+        # Use case only for arrays comprised of only subarrays
         final_perm_string = ""
         for primary_perm in list(primary_perms):
             secondary_perms = permutations(primary_perm[0], 1)
@@ -42,27 +82,20 @@ def column_combinatorics(array, explanation=None):
 #                        if explanation is not None:
 #                            final_perm_list.append([explanation])
 #                            print(explanation)
-#                print(final_perm_list)
                 final_perm_string += str(" ".join(final_perm_list)) + " formatstring='\"%s\"' outfile=\"\"" + "\n"
     else:
-        #use case only for arrays with no subarrays
-        #returns list
+        # Use case only for arrays comprised of no subarrays
         perms = permutations(array, 2)
         final_perm_string = ""
         for permutation in list(perms):
-#            print(permutation)
             final_perm_list = []
             for sub_perm_list in permutation:
                 final_perm_list.append(sub_perm_list)
             if explanation is not None:
                 final_perm_list.append(explanation)
-#                        print(explanation)
-#            print(final_perm_list)
             final_perm_string += str(" ".join(final_perm_list)) + " formatstring='\"%s\"' outfile=\"\"" + "\n"
 
-#   output to nvim buffer
-#    print(final_perm_string)
-
+    # Output to nvim buffer
     with tempfile.NamedTemporaryFile(suffix='csvtohardv') as temp:
         text = open(temp.name, 'w')
         text.write(str(final_perm_string))
@@ -104,7 +137,6 @@ def output_to_hardv(infile, selected_column_names, formatstring='"%s"', mod=None
 
 
 def main():
-#    output_to_hardv("/home/jcrtf/archives/flashcards/c-syntax-structures.csv", non_keywords, formatstring=formatstring_arg, mod=mod_arg, outfile=outfile_arg)
 #    column_combinatorics([["eng.txt", "eng.aud", "eng.vid"], ["rus.txt", "rus.aud", "rus.vid"], ["ara.txt", "ara.aud", "rus.vid"]]) # inhibit use case # done
 #    column_combinatorics([["eng.txt", "eng.aud", "eng.vid"], ["rus.txt", "rus.aud", "rus.vid"]]) # desired behaviour
 #    column_combinatorics([["eng.txt", "eng.aud"], ["rus.txt", "rus.aud"]]) # desired behaviour
@@ -112,10 +144,9 @@ def main():
 #    column_combinatorics(["location", "pao"], explanation="explanation") # desired behaviour
 #    column_combinatorics(["location", "pao"], "explanation") # desired behaviour
 #    check_whether_in_file()
-#    print(buffer_output)
 
-#    buffer_output = column_combinatorics(["structure", "code", "desc"]) # desired behaviour
-    buffer_output='code structure formatstring=\'Name the C syntax structure coded "%s"\' outfile="/dev/stdout"'
+    buffer_output = column_combinatorics(["structure", "code", "desc"]) # desired behaviour
+#    buffer_output='code structure formatstring=\'Name the C syntax structure coded "%s"\' outfile="/dev/stdout"'
 
     lineiterator = buffer_output.splitlines()
     for line in lineiterator:
@@ -143,17 +174,7 @@ def main():
         except IndexError:
             formatstring_arg='%s'
 
-#        print(non_keywords)
-#        print(outfile_arg)
         output_to_hardv("/home/jcrtf/archives/flashcards/c-syntax-structures.csv", non_keywords, formatstring=formatstring_arg, mod=mod_arg, outfile=outfile_arg)
-#        print(non_keywords)
 
-#        print(keywords)
-#        print(non_keywords)
-
-#    print(non_keywords)
-
-#
-##    print(buffer_output)
-
-main()
+#main()
+print(str(card1))
