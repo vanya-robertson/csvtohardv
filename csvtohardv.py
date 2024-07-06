@@ -19,27 +19,6 @@ import csv
 import tempfile, subprocess
 from re import findall, sub, split, search, DOTALL
 
-#input_card = """NEXT	2023-09-14 19:05:49 +0100
-#PREV	2023-09-12 19:05:49 +0100
-#Q	Describe the C syntax structure coded "union NAME {
-#    ELEMENTS;
-#} [VARIABLE_NAME];".
-#A	creates a custom data type where only one instance can exist
-#STRUCTURE	union
-#%%this is the first comment
-#%%this is the second comment
-#%%
-#
-#"""
-#
-#input_untabbed = """Describe the C syntax structure coded "union NAME {
-#    ELEMENTS;
-#} [VARIABLE_NAME];"."""
-#
-#input_tabbed = """Describe the C syntax structure coded "union NAME {
-#	    ELEMENTS;
-#	} [VARIABLE_NAME];"."""
-
 # Prepend tab to any line n > 1 in a string
 def add_tabs(instring):
     returnlist = []
@@ -193,7 +172,7 @@ def hardv_file_to_list(input_file):
     return card_list
 
 #buffer_output = column_combinatorics(["structure", "code", "desc"]) # desired behaviour
-buffer_output='code structure format_string=\'Name the C syntax structure coded "%s"\' outfile="/dev/stdout"'
+buffer_output='code structure potato.txt format_string=\'Name the C syntax structure coded "%s"\' outfile="/home/jcrtf/csvtohardv/code-to-structure.fc"'
 lineiterator = buffer_output.splitlines()
 for line in lineiterator:
 
@@ -231,24 +210,19 @@ for line in lineiterator:
     combined_list = []
     question_field_list = [existing_card['question_field'] for existing_card in existing_list]
 
-#    print(generated_list)
-#    print(existing_list)
-
     for card in generated_list:
         if card['question_field'] in question_field_list:
             card_no = question_field_list.index(card['question_field'])
             combined_list.append(existing_list[card_no] | card)
-#            print(existing_list[card_no])
-#            print(card)
         else:
             combined_list.append(card)
-#            pass
 
     # Wipe output file
-    open(outfile_arg, 'w').close()
-    text = open(outfile_arg, "a")
+#    open(outfile_arg, 'w').close()
+    # Write to output file
+#    text = open(outfile_arg, "a")
+    text = open("/dev/stdout", "a")
     for item in combined_list:
-#        print(item.keys())
         if item['MOD'] != '':
             text.write("MOD\t" + item['MOD'] + "\n")
         if 'NEXT' in item.keys():
@@ -257,10 +231,13 @@ for line in lineiterator:
             text.write("PREV\t" + item['PREV'] + "\n")
         text.write("Q\t" + item['format_string'] % item['question_field'] + "\n")
         text.write("A\t" + item['A'] + "\n")
-        # Insert all other allcaps values
+        # Insert all other fields
         for x in item.keys():
             if bool(search("^[A-Z]+", x)) and x != 'MOD' and x != 'A' and x != 'NEXT' and x != 'PREV':
-                text.write(x + "\t" + item[x] + "\n")
+                if bool(search(".", x)):
+                    text.write(x.split(".")[-1] + "\t" + item[x] + "\n")
+                else:
+                    text.write(x + "\t" + item[x] + "\n")
         # Insert all comments
         for x in item.keys():
             if bool(search("^comment.+", x)):
