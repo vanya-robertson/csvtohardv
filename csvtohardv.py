@@ -120,9 +120,9 @@ def csv_to_dict(infile, selected_column_names, format_string='"%s"', mod=None):
             card_dict = {'MOD': mod,
                         'question_field': add_tabs(row[all_column_names.index(selected_column_names[0])]),
                         'format_string': format_string,
-                        'A': row[all_column_names.index(selected_column_names[1])]}
+                        'A': add_tabs(row[all_column_names.index(selected_column_names[1])])}
             for column_name in selected_column_names[2:]:
-                card_dict[column_name.upper()] = row[all_column_names.index(column_name)]
+                card_dict[column_name.upper()] = add_tabs(row[all_column_names.index(column_name)])
             input_card_list.append(card_dict)
     csvfile.close()
     return input_card_list
@@ -180,6 +180,8 @@ def hardv_card_to_dict(input_str):
 def hardv_file_to_list(input_file):
 
     with open(input_file, newline='') as infile:
+        if input_file == '/dev/stdout':
+            return []
         file_content = infile.read()
         card_list = split("%%\n\n", file_content)
         counter = 0
@@ -191,7 +193,7 @@ def hardv_file_to_list(input_file):
     return card_list
 
 #buffer_output = column_combinatorics(["structure", "code", "desc"]) # desired behaviour
-buffer_output='code desc format_string=\'Describe the C syntax structure coded "%s"\' outfile="/home/jcrtf/csvtohardv/code-to-structure.fc"'
+buffer_output='code structure format_string=\'Name the C syntax structure coded "%s"\' outfile="/dev/stdout"'
 lineiterator = buffer_output.splitlines()
 for line in lineiterator:
 
@@ -244,7 +246,7 @@ for line in lineiterator:
 
     # Wipe output file
     open(outfile_arg, 'w').close()
-    text = open("/dev/stdout", "a")
+    text = open(outfile_arg, "a")
     for item in combined_list:
 #        print(item.keys())
         if item['MOD'] != '':
