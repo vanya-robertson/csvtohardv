@@ -1,19 +1,18 @@
 #!/usr/bin/env python
-# script to convert csvs into flashcards of all combinations
+# script to convert csv files into flashcards of all combinations
 
-# also create json to hardv extension for steno
+# 1. Takes in arrays of column names from csv and optionally column name for explanation, automatically generating all permutations.
+# 2. Output this to a neovim buffer for editing.
+# 3. For each permutation, the user adds the output file, and optionally a format string for the question and a mod script for the flashcard.
+# 4. Output of neovim buffer used to read csv file, creating a list of dictionaries corresponding to the hardv format.
+# 5. Another list of dictionaries created from each output specified in the buffer.
+# 6. These two dictionaries are merged for each output file in the buffer, updating the answer field for each card but preserving the card timestamps and comments.
+#    Since cards are identified by the content within their format string, format strings may also be changed with csvtohardv.
+#    This means that a modification of a question field in the csv file will delete it from the output file, but a new one will be created without timestamps (desirable behaviour) and without comments (undesirable behaviour)
+# 7. For each output file in the buffer, the resultant combined dictionary is converted to text and output to the specified output file
 
-# make card class for manipulation
-
-# 1. function takes in array (of column names from csv) and optionally column name for explanation, automatically generating permutations # done
-# 2. output this to a neovim buffer for editing and add a format sequence to the end of each line
-# 3. save text from this neovim buffer, performing the function writing the hardv format 
-# this function takes in csv file, output file, format string, args from column_combinatorics ([["1", "2"], ["3", "4"]] or [["1", "2"], "5"])
-# for a given card, check whether a question is not output to a file if it is already present, unless the answer has been changed, in which case replace it
-# if card in output, output to temp file with timestamps if present
-# if card in input but not in output, output to temp file
-
-#from sys import argv
+from sys import argv
+from os.path import isfile
 from itertools import permutations
 import csv
 import tempfile, subprocess
@@ -171,8 +170,30 @@ def hardv_file_to_list(input_file):
         card_list.remove('')
     return card_list
 
-#buffer_output = column_combinatorics(["structure", "code", "desc"]) # desired behaviour
-buffer_output='code structure potato.txt format_string=\'Name the C syntax structure coded "%s"\' outfile="/home/jcrtf/csvtohardv/code-to-structure.fc"'
+# Process command-line arguments
+array_list = []
+
+if len(argv[2:]) > 2:
+    raise IndexError("You may only input two arguments besides the csv file, with the first being a space-separated list of columns for recombination, and the second being either another parallel list or an explanatory column")
+elif len(argv[2:]) == 1:
+    if not bool(search(" ", argv[2])):
+        raise IndexError("You may only input two arguments besides the csv file, with the first being a space-separated list of columns for recombination, and the second being either another parallel list or an explanatory column")
+    else:
+        array_list = argv[2].split(" ")
+elif len(argv[2:]) == 2: 
+    if bool(search(" ", argv[3])):
+        array_list.append(argv[2].split(" "))
+        array_list.append(argv[3].split(" "))
+    else:
+        array_list = argv[2].split(" ")
+        explanation_var = argv[3]
+# Call combinatorics script and edit in buffer
+if 'explanation_var' in locals():
+    buffer_output = column_combinatorics(array_list, explanation_var)
+else:
+    buffer_output = column_combinatorics(array_list)
+
+# Process buffer output
 lineiterator = buffer_output.splitlines()
 for line in lineiterator:
 
@@ -195,17 +216,24 @@ for line in lineiterator:
         mod_arg=''
 
     try:
-        format_string_full_arg = [ match for match in keywords if "format_string=" in match ][0]
+        format_string_full_arg = [ match for match in keywords if "formatstring=" in match ][0]
         format_string_quoted_arg = split("=", format_string_full_arg, 1)[1]
         format_string_arg = str(format_string_quoted_arg.replace("\'", "", 1).replace("\'", "", len(format_string_quoted_arg)))
     except IndexError:
         format_string_arg='%s'
 
-    generated_list = csv_to_dict("/home/jcrtf/projects/csvtohardv/c-syntax-structures.csv", non_keywords, format_string=format_string_arg, mod=mod_arg)
-#    Generate the list of existing cards
     existing_list = []
-    for card in hardv_file_to_list(outfile_arg):
-        existing_list.append(hardv_card_to_dict(card))
+
+    # If output file does not exist, create it
+    if not isfile(outfile_arg):
+        open(outfile_arg, 'w').write("")
+        # If output file does exist, process its contents and wipe it
+    else:
+        for card in hardv_file_to_list(outfile_arg):
+            existing_list.append(hardv_card_to_dict(card))
+        open(outfile_arg, 'w').close()
+    generated_list = csv_to_dict(argv[1], non_keywords, format_string=format_string_arg, mod=mod_arg)
+#    Generate the list of existing cards
 
     combined_list = []
     question_field_list = [existing_card['question_field'] for existing_card in existing_list]
@@ -217,11 +245,8 @@ for line in lineiterator:
         else:
             combined_list.append(card)
 
-    # Wipe output file
-#    open(outfile_arg, 'w').close()
     # Write to output file
-#    text = open(outfile_arg, "a")
-    text = open("/dev/stdout", "a")
+    text = open(outfile_arg, "a")
     for item in combined_list:
         if item['MOD'] != '':
             text.write("MOD\t" + item['MOD'] + "\n")
