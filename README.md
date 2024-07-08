@@ -12,7 +12,7 @@ From command-line, takes the input csv file and the names of its columns in eith
 1. `csvtohardv test/c-syntax-structures.csv "code description structure"`  
 2. `csvtohardv test/c-syntax-structures.csv "code structure" description`  
 3. `csvtohardv test/french-vocab.csv "eng.text eng.audio" "fra.text fra.audio"`  
-Note that column names may only include alphabetical characters and "." ![see below](#column-name-conversion). 
+Note that column names may only include alphabetical characters and "." ![see below](#column-name-conversion).  
 Note that file names containing the `~` `$HOME` expansion do not work.
 
 Case 1.  
