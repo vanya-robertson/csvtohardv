@@ -1,6 +1,6 @@
 # csvtohardv
 
-A program for high-throughput flashcard generation from csv files
+A program for high-throughput flashcard generation from csv files  
 Written in Python  
 
 # Specifications
