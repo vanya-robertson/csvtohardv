@@ -26,14 +26,14 @@ Case 1.
   - ["description", "code"]  
 
 Case 2.  
-  - so `"location PAO" "explanation"` generates ${}_2 P_{2} = 2$ lists:  
+  - so `"location PAO" "explanation"` generates ${}_2 P_2 = 2$ lists:  
   - Generates every possible pairwise permutation of strings  
   - ["location", "PAO", "explanation"]  
   - ["PAO", "location", "explanation"]  
 
 Case 3.  
   - Generates every permutation of the lists and combines the lists, but individually including elements from the first list.  
-  - so `"eng.text eng.audio" "fra.text fra.audio"` generates $2 \text{(items in each sublist)} * {}_2 P_{2} \text{(items in list)} = 4$ lists:  
+  - so `"eng.text eng.audio" "fra.text fra.audio"` generates $2 \text{(items in each sublist)} * {}_2 P_2 \text{(items in list)} = 4$ lists:  
   - ["eng.text", "fra.text", "fra.audio"]  
   - ["eng.audio", "fra.text", "fra.audio"]  
   - ["fra.text", "eng.text", "eng.audio"]  
