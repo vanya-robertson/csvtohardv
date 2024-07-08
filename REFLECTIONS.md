@@ -12,6 +12,7 @@ At command-line argumentation, the program does not accept an explanatory column
 `csvtohardv.py` only uses neovim to edit the buffer. Add support for `$EDITOR` (urgent, important) and modify to enable to work on Windows (not urgent, not important).  
 File names with `~` to `$HOME` expansion do not work (not urgent, not important).  
 Program does not check for existence of column names before creation of buffer (not urgent, not important).  
+For convenience, if two or more arguments without a space are inserted without quotation marks, `csvtohardv.py` should read it as one list for complete permutation (not urgent, not important).  
 
 # Further development
 
