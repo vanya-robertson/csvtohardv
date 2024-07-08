@@ -11,7 +11,7 @@ From command-line, takes the input csv file and the names of its columns in eith
 - Array in format `"col1 col2 col3"` (with a constituent number of 2 or more items) or `"col1 col2" "col3 col4"`.  
 1. `csvtohardv test/c-syntax-structures.csv "code description structure"`  
 2. `csvtohardv test/c-syntax-structures.csv "code structure" description`  
-3. `csvtohardv test/french-vocab.csv` "eng.text eng.audio" "fra.text fra.audio"  
+3. `csvtohardv test/french-vocab.csv "eng.text eng.audio" "fra.text fra.audio"`  
 Note that column names may only include alphabetical characters and "." ![see below](#column-name-conversion). 
 Note that file names containing the `~` `$HOME` expansion do not work.
 
