@@ -8,8 +8,8 @@
 # 5. Another list of dictionaries created from each output specified in the buffer.
 # 6. These two dictionaries are merged for each output file in the buffer, updating the answer field for each card but preserving the card timestamps and comments.
 #    Since cards are identified by the content within their format string, format strings may also be changed with csvtohardv.
-#    This means that a modification of a question field in the csv file will delete it from the output file, but a new one will be created without timestamps (desirable behaviour) and without comments (undesirable behaviour)
-# 7. For each output file in the buffer, the resultant combined dictionary is converted to text and output to the specified output file
+#    This means that a modification of a question field in the csv file will delete it from the output file, but a new one will be created without timestamps (desirable behaviour) and without comments (undesirable behaviour).
+# 7. For each output file in the buffer, the resultant combined dictionary is converted to text and output to the specified output file.
 
 from sys import argv
 from os.path import isfile
@@ -173,14 +173,19 @@ def hardv_file_to_list(input_file):
 # Process command-line arguments
 array_list = []
 
+explanation_var = None
+# Over two arguments besides csv file
 if len(argv[2:]) > 2:
     raise IndexError("You may only input two arguments besides the csv file, with the first being a space-separated list of columns for recombination, and the second being either another parallel list or an explanatory column")
+# If only one argument besides csv file
 elif len(argv[2:]) == 1:
     if not bool(search(" ", argv[2])):
         raise IndexError("You may only input two arguments besides the csv file, with the first being a space-separated list of columns for recombination, and the second being either another parallel list or an explanatory column")
     else:
         array_list = argv[2].split(" ")
 elif len(argv[2:]) == 2: 
+    if not bool(search(" ", argv[2])):
+        raise ValueError ("The first argument besides the csv file must contain at least two column titles")
     if bool(search(" ", argv[3])):
         array_list.append(argv[2].split(" "))
         array_list.append(argv[3].split(" "))
@@ -188,10 +193,10 @@ elif len(argv[2:]) == 2:
         array_list = argv[2].split(" ")
         explanation_var = argv[3]
 # Call combinatorics script and edit in buffer
-if 'explanation_var' in locals():
-    buffer_output = column_combinatorics(array_list, explanation_var)
-else:
-    buffer_output = column_combinatorics(array_list)
+#if 'explanation_var' != None:
+buffer_output = column_combinatorics(array_list, explanation_var)
+#else:
+#    buffer_output = column_combinatorics(array_list)
 
 # Process buffer output
 lineiterator = buffer_output.splitlines()
@@ -206,6 +211,10 @@ for line in lineiterator:
         outfile_quoted_arg = split("=", outfile_full_arg, 1)[1]
         outfile_arg = str(outfile_quoted_arg.replace("\"", "", 1).replace("\"", "", len(outfile_quoted_arg)))
     except IndexError:
+        outfile_arg='/dev/stdout'
+
+    # For case where output argument defined in buffer as empty string
+    if outfile_arg == '':
         outfile_arg='/dev/stdout'
 
     try:

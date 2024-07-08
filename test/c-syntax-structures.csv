@@ -1,0 +1,57 @@
+structure,code,desc
+if-statement,"if(TEST) {
+    CODE;
+} else if(OTHER_TEST) {
+    CODE;
+} else {
+    CODE;
+}",basic logic branching
+switch-statement,"switch (OPERAND) {
+    case CONSTANT:
+	CODE;
+	break;
+    default:
+	CODE;
+}",logic branching on integer constants
+while-loop,"while(TEST) {
+CODE;
+}",most basic loop
+while-continue-loop,"while(TEST) {
+if(OTHER_TEST) {
+    continue;
+}
+CODE;
+}","loops, and on condition, executes"
+while-break-loop,"while(TEST) {
+    if(OTHER_TEST) {
+	break;
+    }
+    CODE;
+}",breaks a loop on condition
+do-while-loop,"do {
+    CODE;
+} while(TEST);",runs code then tests for repeat
+for-loop,"for(INIT; TEST; POST) {
+    CODE;
+}",controlled counted loop
+enum,"enum { CONST1, CONST2, CONST3 } NAME;",creates a set of integer constants
+goto,"if(ERROR_TEST) {
+    goto fail;
+}
+
+fail:
+    CODE;",jump to a label (used in error detection and exiting)
+function,"TYPE NAME(ARG1, ARG2, ..) {
+    CODE;
+    return VALUE;
+}",define a function
+typedef,"typedef DEFINITION IDENTIFIER;",define a new type
+struct,"struct NAME {
+    ELEMENTS;
+} [VARIABLE_NAME];",create a custom data type
+typedef-struct,"typedef struct [STRUCT_NAME] {
+    ELEMENTS;
+} IDENTIFIER;",create a type for a structure
+union,"union NAME {
+    ELEMENTS;
+} [VARIABLE_NAME];",create a custom data type where only one instance can exist
