@@ -225,7 +225,7 @@ for line in lineiterator:
         mod_arg=''
 
     try:
-        format_string_full_arg = [ match for match in keywords if "formatstring=" in match ][0]
+        format_string_full_arg = [ match for match in keywords if "format_string=" in match ][0]
         format_string_quoted_arg = split("=", format_string_full_arg, 1)[1]
         format_string_arg = str(format_string_quoted_arg.replace("\'", "", 1).replace("\'", "", len(format_string_quoted_arg)))
     except IndexError:
