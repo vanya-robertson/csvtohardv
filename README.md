@@ -7,7 +7,7 @@ Written in Python
 
 ## Command-line entry
 
-From command-line, takes the input csv file and the names of its columns in either a space-separated list, a space separated list and separately in an explanatory column, or in two space-separated lists.  
+From command-line, takes the input csv file and the names of its columns in either a space-separated list, a space separated list and separately in an explanatory column, or in two space-separated lists. The files should be in the working directory.  
 - Array in formats `"col1 col2 col3"` (with a constituent number of 2 or more items), `"col1 col2" "col3"` or `"col1 col2" "col3 col4"`.  
 1. `csvtohardv test/c-syntax-structures.csv "code description structure"`  
 2. `csvtohardv test/c-syntax-structures.csv "code structure" "description"` or `csvtohardv test/c-syntax-structures.csv "code structure" description` (without the quotations)  

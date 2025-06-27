@@ -11,11 +11,16 @@
 #    This means that a modification of a question field in the csv file will delete it from the output file, but a new one will be created without timestamps (desirable behaviour) and without comments (undesirable behaviour).
 # 7. For each output file in the buffer, the resultant combined dictionary is converted to text and output to the specified output file.
 
+    # Next sprint requirements:
+    # If existing intermediate file exists, add extra flag to load that instead at this point in the process, without doing the column combinatorics again
+    # Also remove tempfile references and add sensible name for local storage
+
 from sys import argv
 from os.path import isfile
 from itertools import permutations
 import csv
-import tempfile, subprocess
+#import tempfile
+import subprocess
 from re import findall, sub, split, search, DOTALL
 
 # Prepend tab to any line n > 1 in a string
@@ -66,16 +71,25 @@ def column_combinatorics(array, explanation=None):
             final_perm_string += str(" ".join(final_perm_list)) + " format_string='\"%s\"' outfile=\"\"" + "\n"
 
     # Output to nvim buffer
-    with tempfile.NamedTemporaryFile(suffix='csvtohardv') as temp:
-        text = open(temp.name, 'w')
-        text.write(str(final_perm_string))
-        text.close()
-        subprocess.call(['nvim', temp.name])
-        text = open(temp.name, 'r')
-        buffer_output = text.read()
-        temp.close()
-    return(buffer_output)
 
+#    with tempfile.NamedTemporaryFile(suffix='csvtohardv') as temp: # temp intermediate file version
+#        text = open(temp.name, 'w')
+#        text.write(str(final_perm_string))
+#        text.close()
+#        subprocess.call(['nvim', temp.name])
+#        text = open(temp.name, 'r')
+#        buffer_output = text.read()
+#        temp.close()
+#    return(buffer_output)
+
+    text = open(temp, 'w')
+    text.write(str(final_perm_string))
+    text.close()
+    subprocess.call(['nvim', temp])
+    text = open(temp, 'r')
+    buffer_output = text.read()
+    text.close()
+    return(buffer_output)
 
 # Return a list of dictionaries embodying a card
 def csv_to_dict(infile, selected_column_names, format_string='"%s"', mod=None):
@@ -174,6 +188,8 @@ def hardv_file_to_list(input_file):
 array_list = []
 
 explanation_var = None
+
+temp = "." + argv[1] + ".fi" # persistent intermediate version
 # Over two arguments besides csv file
 if len(argv[2:]) > 2:
     raise IndexError("You may only input two arguments besides the csv file, with the first being a space-separated list of columns for recombination, and the second being either another parallel list or an explanatory column")
@@ -192,11 +208,15 @@ elif len(argv[2:]) == 2:
     else:
         array_list = argv[2].split(" ")
         explanation_var = argv[3]
-# Call combinatorics script and edit in buffer
-#if 'explanation_var' != None:
-buffer_output = column_combinatorics(array_list, explanation_var)
-#else:
-#    buffer_output = column_combinatorics(array_list)
+
+# check whether local intermediate file exists for this file
+if isfile(temp):
+    subprocess.call(['nvim', temp])
+    text = open(temp, 'r')
+    buffer_output = text.read()
+else:
+    # Call combinatorics script and edit in buffer
+    buffer_output = column_combinatorics(array_list, explanation_var)
 
 # Process buffer output
 lineiterator = buffer_output.splitlines()
@@ -208,7 +228,7 @@ for line in lineiterator:
 
     try:
         outfile_full_arg = [ match for match in keywords if "outfile=" in match ][0]
-        outfile_quoted_arg = split("=", outfile_full_arg, 1)[1]
+        outfile_quoted_arg = split("=", outfile_full_arg, maxsplit=2)[1]
         outfile_arg = str(outfile_quoted_arg.replace("\"", "", 1).replace("\"", "", len(outfile_quoted_arg)))
     except IndexError:
         outfile_arg='/dev/stdout'
@@ -226,7 +246,7 @@ for line in lineiterator:
 
     try:
         format_string_full_arg = [ match for match in keywords if "format_string=" in match ][0]
-        format_string_quoted_arg = split("=", format_string_full_arg, 1)[1]
+        format_string_quoted_arg = split("=", format_string_full_arg, maxsplit=1)[1]
         format_string_arg = str(format_string_quoted_arg.replace("\'", "", 1).replace("\'", "", len(format_string_quoted_arg)))
     except IndexError:
         format_string_arg='%s'
